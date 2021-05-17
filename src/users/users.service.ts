@@ -29,20 +29,24 @@ export class UsersService {
     newUser.name = user.name;
     newUser.email = user.email;
     newUser.password = user.password;
-    // newUser.groups = user.groups;
-    // newUser.addresses = user.addresses;
     validate(newUser).then((errors) => {
       // errors is an array of validation errors
       if (errors.length > 0) {
-        console.log('validation failed. errors: ', errors);
+        throw new HttpException('Group Not Found', HttpStatus.NOT_FOUND);
       } else {
         return this.usersRepository.save(newUser);
       }
     });
   }
 
-  async update(id: number, user: UsersDTO): Promise<UpdateResult> {
-    return await this.usersRepository.update(id, user);
+  async update(id: number, user: UsersDTO) {
+    if ((await this.getOneById(id)) == null) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    } else {
+      await this.usersRepository.update(id, user);
+      const myUser = await this.usersRepository.findOne(id);
+      return myUser;
+    }
   }
 
   async userJoinGroup(idUser: number, idGroup: number) {
