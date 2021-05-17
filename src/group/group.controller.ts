@@ -36,10 +36,13 @@ export class GroupsController {
   async update(@Body() group: GroupsEntity, @Param('id') id: number) {
     return await this.groupsService.update(id, group);
   }
-  // @Delete(':idUser/deleteUser/:id')
-  // async deleteUserInGroup(@Param('idUser') idUser: number,@Param('id') id: number) {
-  //   return await this.groupsService.deleteUserInGroup(id,idUser);
-  //  }
+  @Delete(':idUser/deleteUser/:id')
+  async deleteUserInGroup(
+    @Param('idUser') idUser: number,
+    @Param('id') id: number,
+  ) {
+    return await this.groupsService.deleteUserInGroup(idUser, id);
+  }
   @Delete(':id')
   async deleteUser(@Param('id') id: number) {
     return await this.groupsService.destroy(id);

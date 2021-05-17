@@ -7,7 +7,6 @@ import { getRepository } from 'typeorm';
 import { validate } from 'class-validator';
 import { UsersDTO } from './interfaces/users.dto';
 import { UsersRO } from './interfaces/users.ro';
-// const studRepository = manager.getRepository(Student);
 
 @Injectable()
 export class UsersService {
@@ -46,12 +45,30 @@ export class UsersService {
     return await this.usersRepository.update(id, user);
   }
 
-  async joinGroup(idUser: number, idGroup: number) {
+  async userJoinGroup(idUser: number, idGroup: number) {
+    const groupRepository = getRepository(GroupsEntity);
+    const group: GroupsEntity = await groupRepository.findOne({ id: idGroup });
+    const user = await this.usersRepository.findOne({ id: idUser });
+    if (group == undefined) {
+      throw new HttpException('Group Not Found', HttpStatus.NOT_FOUND);
+    } else {
+      if (user == undefined) {
+        throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
+      } else {
+        group.users = [user];
+        await groupRepository.save(group);
+        return group;
+      }
+    }
+  }
+
+  async groupJoinByUser(idUser: number, idGroup: number) {
     const groupRepository = getRepository(GroupsEntity);
     const group: GroupsEntity = await groupRepository.findOne({ id: idGroup });
     const user = await this.usersRepository.findOne({ id: idUser });
     user.groups = [group];
-    return await this.usersRepository.save(user);
+    await this.usersRepository.save(user);
+    return user;
   }
 
   async destroy(id: number): Promise<DeleteResult> {
@@ -59,7 +76,9 @@ export class UsersService {
   }
 
   async getOneById(id: number): Promise<UsersRO> {
-    return await this.usersRepository.findOne(id);
+    return await this.usersRepository.findOne(id, {
+      relations: ['groups'],
+    });
   }
   async getOneByIdOrFail(id: number): Promise<UsersRO> {
     if ((await this.getOneById(id)) == null) {
@@ -67,14 +86,5 @@ export class UsersService {
     } else {
       return await this.getOneById(id);
     }
-  }
-
-  async deleteUserInGroup(idUser: number, idGroup: number) {
-    const groupRepository = getRepository(GroupsEntity);
-    const group: GroupsEntity = await groupRepository.findOne({ id: idGroup });
-    const user = await this.usersRepository.findOne({ id: idUser });
-    // groupRepository.delete({ users: myUser });
-    user.groups = [];
-    return await this.usersRepository.save(user);
   }
 }
