@@ -43,9 +43,17 @@ export class UsersService {
     if ((await this.getOneById(id)) == null) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     } else {
-      await this.usersRepository.update(id, user);
-      const myUser = await this.usersRepository.findOne(id);
-      return myUser;
+      if (
+        (await user.name) == undefined ||
+        (await user.email) == undefined ||
+        (await user.password) == undefined
+      ) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      } else {
+        await this.usersRepository.update(id, user);
+        const myUser = await this.usersRepository.findOne(id);
+        return myUser;
+      }
     }
   }
 
