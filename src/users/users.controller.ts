@@ -7,12 +7,13 @@ import {
   Body,
   Param,
   UseFilters,
+  ParseIntPipe,
+  HttpStatus,
 } from '@nestjs/common';
-// import { Request, Response, NextFunction } from 'express';
 import { UsersService } from './users.service';
-// import { UsersEntity } from './users.entity';
 import { UsersDTO } from './interfaces/users.dto';
 import { userNotFoundExceptionFilter } from 'src/exception-filter/userNotFound.filter';
+import { ValidationPipe } from 'src/Pipe/ValidationPipe';
 
 @Controller('users')
 @UseFilters(new userNotFoundExceptionFilter())
@@ -30,8 +31,14 @@ export class UsersController {
   }
 
   @Get(':id')
-  async getUser(@Param() params) {
-    return await this.usersService.getOneByIdOrFail(params);
+  async getUser(
+    @Param(
+      'id',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE }),
+    )
+    id: number,
+  ) {
+    return await this.usersService.getOneByIdOrFail(id);
   }
 
   @Get()
@@ -40,7 +47,7 @@ export class UsersController {
   }
 
   @Post()
-  async createUsers(@Body() user: UsersDTO) {
+  async createUsers(@Body(new ValidationPipe()) user: UsersDTO) {
     return await this.usersService.create(user);
   }
 
