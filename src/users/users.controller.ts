@@ -6,12 +6,16 @@ import {
   Delete,
   Body,
   Param,
+  UseFilters,
 } from '@nestjs/common';
+// import { Request, Response, NextFunction } from 'express';
 import { UsersService } from './users.service';
 // import { UsersEntity } from './users.entity';
 import { UsersDTO } from './interfaces/users.dto';
+import { userNotFoundExceptionFilter } from 'src/exception-filter/userNotFound.filter';
 
 @Controller('users')
+@UseFilters(new userNotFoundExceptionFilter())
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

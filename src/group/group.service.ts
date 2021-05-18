@@ -12,8 +12,15 @@ export class GroupsService {
     private readonly groupsRepository: Repository<GroupsEntity>,
   ) {}
 
-  async showOne(id: number): Promise<GroupsEntity> {
+  async getOneGroupById(id: number): Promise<GroupsEntity> {
     return await this.groupsRepository.findOne(id);
+  }
+  async getOneGroupOrFail(id: number): Promise<GroupsEntity> {
+    if ((await this.getOneGroupById(id)) == null) {
+      throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
+    } else {
+      return await this.getOneGroupById(id);
+    }
   }
   async showAll(): Promise<GroupsEntity[]> {
     return await this.groupsRepository.find();
@@ -22,15 +29,27 @@ export class GroupsService {
     return await this.groupsRepository.save(group);
   }
   async getAllUserOfOneGroup(idGroup: number): Promise<GroupsEntity> {
-    return await this.groupsRepository.findOne(idGroup, {
-      relations: ['users'],
-    });
+    if ((await this.getOneGroupById(idGroup)) == null) {
+      throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
+    } else {
+      return await this.groupsRepository.findOne(idGroup, {
+        relations: ['users'],
+      });
+    }
   }
-  async update(id, group: GroupsEntity): Promise<UpdateResult> {
-    return await this.groupsRepository.update(id, group);
+  async update(idGroup, group: GroupsEntity): Promise<UpdateResult> {
+    if ((await this.getOneGroupById(idGroup)) == null) {
+      throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
+    } else {
+      return await this.groupsRepository.update(idGroup, group);
+    }
   }
-  async destroy(id: number): Promise<DeleteResult> {
-    return await this.groupsRepository.delete(id);
+  async destroy(idGroup: number): Promise<DeleteResult> {
+    if ((await this.getOneGroupById(idGroup)) == null) {
+      throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
+    } else {
+      return await this.groupsRepository.delete(idGroup);
+    }
   }
   async deleteUserInGroup(idUser: number, idGroup: number) {
     const usersRepository = getRepository(UsersEntity);

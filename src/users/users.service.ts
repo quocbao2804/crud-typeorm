@@ -1,6 +1,6 @@
 import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, Repository, UpdateResult } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { UsersEntity } from './users.entity';
 import { GroupsEntity } from '../group/group.entity';
 import { getRepository } from 'typeorm';
@@ -76,7 +76,11 @@ export class UsersService {
   }
 
   async destroy(id: number): Promise<DeleteResult> {
-    return await this.usersRepository.delete(id);
+    if ((await this.getOneById(id)) == null) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    } else {
+      return await this.usersRepository.delete(id);
+    }
   }
 
   async getOneById(id: number): Promise<UsersRO> {
